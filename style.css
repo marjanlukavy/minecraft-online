@@ -86,6 +86,33 @@ html, body {
   color: #fff; text-shadow: 1px 1px 0 #000, -1px 1px 0 #000;
 }
 
+/* ---------- Екран введення імені ---------- */
+#nameOverlay {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.6);
+}
+#nameOverlay.hidden { display: none; }
+#namePanel {
+  background: linear-gradient(#c9c4bd, #b3aea6);
+  border: 4px solid #5b5750; border-radius: 10px;
+  padding: 24px 28px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.5);
+}
+#namePanel h2 { font-size: 18px; color: #2c2a26; margin-bottom: 6px; }
+#namePanel p { font-size: 13px; color: #3a382f; margin-bottom: 14px; }
+#nameInput {
+  width: 230px; font-size: 15px; padding: 9px 10px; text-align: center;
+  border: 3px solid #6f6a63; border-radius: 5px; background: #efece7; color: #1f1d19;
+  outline: none;
+}
+#nameInput:focus { border-color: #3a7ca8; }
+#nameBtn {
+  display: block; margin: 16px auto 0; padding: 9px 26px;
+  font-size: 15px; font-weight: 700; color: #fff;
+  background: #4a8f3a; border: 3px solid #3a6f2c; border-radius: 6px; cursor: pointer;
+}
+#nameBtn:hover { background: #57a544; }
+
 /* ---------- HUD ---------- */
 #help {
   position: fixed; top: 10px; left: 10px;

@@ -161,6 +161,10 @@ wss.on("connection", (ws) => {
       };
       broadcast({ t: "state", players: [{ id, ...client.state }] }, ws);
 
+    } else if (msg.t === "rename") {
+      client.name = String(msg.name || "Гравець").slice(0, 16);
+      broadcast({ t: "rename", id, name: client.name }, ws);
+
     } else if (msg.t === "block") {
       const x = msg.x | 0, y = msg.y | 0, v = msg.v | 0;
       if (inBounds(x, y) && v >= 0 && v <= 63) {

@@ -12,6 +12,7 @@ const NET = {
 };
 
 let netStatusEl = null;
+let nameOverlayOpen = false;     // поки відкрито — ввід гри блокується (див. input.js)
 
 function netConnect() {
   // file:// — сервера нема, лишаємось в одиночному режимі
@@ -71,6 +72,12 @@ function handleNetMessage(m) {
       NET.players[m.p.id] = m.p; updateNetStatus(); break;
     case "leave":
       delete NET.players[m.id]; updateNetStatus(); break;
+    case "rename": {
+      const p = NET.players[m.id];
+      if (p) p.name = m.name;
+      updateNetStatus();
+      break;
+    }
     case "state":
       for (const p of m.players) {
         if (p.id === NET.id) continue;
@@ -142,4 +149,41 @@ function updateNetStatus() {
   netStatusEl.textContent = `🟢 Онлайн · ${count} грав. · ${NET.name}`;
 }
 
-netConnect();
+// ===================== Екран введення імені =====================
+function netSubmitName() {
+  const inp = document.getElementById("nameInput");
+  let v = ((inp && inp.value) || "").trim().slice(0, 16);
+  if (!v) v = NET.name;
+  NET.name = v;
+  try { localStorage.setItem("mc-name", v); } catch (e) {}
+  if (NET.connected) netSend({ t: "rename", name: v });  // оновити ім'я в інших
+  const ov = document.getElementById("nameOverlay");
+  if (ov) ov.classList.add("hidden");
+  nameOverlayOpen = false;
+  updateNetStatus();
+}
+
+function netInit() {
+  try {
+    const saved = localStorage.getItem("mc-name");
+    if (saved) NET.name = saved;
+  } catch (e) {}
+
+  const inp = document.getElementById("nameInput");
+  const btn = document.getElementById("nameBtn");
+  if (inp) {
+    inp.value = NET.name;
+    inp.addEventListener("keydown", e => {
+      if (e.code === "Enter" || e.code === "NumpadEnter") { e.preventDefault(); netSubmitName(); }
+    });
+    setTimeout(() => { inp.focus(); inp.select(); }, 50);
+  }
+  if (btn) btn.addEventListener("click", netSubmitName);
+  nameOverlayOpen = true;
+
+  // підключаємось одразу: світ вантажиться за оверлеєм, без блимання
+  netConnect();
+  updateNetStatus();
+}
+
+netInit();

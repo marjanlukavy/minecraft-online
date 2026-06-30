@@ -3,7 +3,16 @@
 const keys = {};
 const mouse = { x: 0, y: 0, left: false, right: false };
 
+// чи зараз користувач щось друкує (поле вводу / відкритий екран імені) —
+// тоді ігрові клавіші ігноруємо
+function uiTyping(e) {
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return true;
+  return typeof nameOverlayOpen !== "undefined" && nameOverlayOpen;
+}
+
 addEventListener("keydown", e => {
+  if (uiTyping(e)) return;
   keys[e.code] = true;
   if (e.code === "KeyE" || e.code === "KeyI" || e.code === "Tab") { e.preventDefault(); toggleInventory(); }
   if (e.code === "Escape" && invOpen) toggleInventory();
