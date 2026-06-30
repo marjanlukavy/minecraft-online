@@ -14,10 +14,8 @@ function uiTyping(e) {
 addEventListener("keydown", e => {
   if (uiTyping(e)) return;
   keys[e.code] = true;
-  if (e.code === "KeyE" || e.code === "KeyI" || e.code === "Tab") { e.preventDefault(); toggleInventory(); }
-  if (e.code === "Escape" && invOpen) toggleInventory();
-  const n = parseInt(e.key);
-  if (n >= 1 && n <= INV_COLS) { selected = n - 1; refreshUI(); }
+  // не прокручувати сторінку стрілками/пробілом
+  if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
 });
 addEventListener("keyup", e => { keys[e.code] = false; });
 
@@ -34,10 +32,5 @@ addEventListener("mouseup", e => {
   if (e.button === 2) mouse.right = false;
 });
 canvas.addEventListener("contextmenu", e => e.preventDefault());
-addEventListener("wheel", e => {
-  if (invOpen) return;
-  selected = (selected + (e.deltaY > 0 ? 1 : -1) + INV_COLS) % INV_COLS;
-  refreshUI();
-}, { passive: true });
 
 addEventListener("resize", resize);

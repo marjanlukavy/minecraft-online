@@ -126,8 +126,4 @@ function refreshUI() {
   updateHeldEl();
 }
 
-// стартові предмети (видаємо після ініціалізації UI)
-addItem(I.PICKAXE); addItem(I.SWORD);
-addItem(B.TORCH, 16); addItem(I.APPLE, 3);
-addItem(B.PLANK, 32); addItem(B.STONE, 16);
-addItem(B.GLASS, 8); addItem(B.BRICK, 16);
+// Режим «будинок-дослідник»: стартових предметів немає (хотбар прихований).

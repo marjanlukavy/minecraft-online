@@ -7,6 +7,7 @@ const WORLD_H = 96;         // висота світу (блоків)
 const GRAVITY = 0.55;
 const MOVE_SPEED = 4.2;
 const JUMP_VEL = 10.5;
+const CLIMB_SPEED = 3.4;    // швидкість лазіння по сходах
 const REACH = 5.2;          // дальність взаємодії (блоків)
 
 const MAX_STACK = 64;

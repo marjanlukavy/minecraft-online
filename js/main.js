@@ -8,9 +8,9 @@ let lastFps = performance.now(), frames = 0;
 
 function loop() {
   // оновлення
-  if (!invOpen) advanceTime();      // час іде, коли інвентар закрито
+  advanceTime();                    // день/ніч для атмосфери
   updatePlayer();
-  updateMobs();
+  if (typeof updateHouse === "function") updateHouse();   // прозорість фасаду
   updateParticles();
   updateCamera();
   if (typeof netTick === "function") netTick();   // надіслати свій стан іншим

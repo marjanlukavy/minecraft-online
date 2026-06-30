@@ -3,7 +3,7 @@
 // Блоки: id 1..63 (зберігаються у світі). Предмети: id >= 100 (лише в інвентарі).
 const B = { AIR:0, GRASS:1, DIRT:2, STONE:3, WOOD:4, LEAVES:5,
             SAND:6, COAL:7, IRON:8, GOLD:9, DIAMOND:10, PLANK:11,
-            GLASS:12, WATER:13, SNOW:14, BRICK:15, TORCH:16 };
+            GLASS:12, WATER:13, SNOW:14, BRICK:15, TORCH:16, STAIRS:17 };
 
 const I = { STICK:100, APPLE:101, PICKAXE:102, SWORD:103,
             COAL_I:104, IRON_I:105, GOLD_I:106, DIAMOND_I:107 };
@@ -22,6 +22,7 @@ const ITEMS = {
   [B.SNOW]:    { name:"Сніг",     base:"#eef4f8", solid:true, block:true },
   [B.BRICK]:   { name:"Цегла",    base:"#9e4b3a", solid:true, block:true },
   [B.TORCH]:   { name:"Факел",    base:"#caa15a", solid:false, torch:true, block:true },
+  [B.STAIRS]:  { name:"Сходи",    base:"#7a5630", solid:false, climb:true, stairs:true },
   // руда в землі (дроп — ресурс-предмет)
   [B.COAL]:    { name:"Вугільна руда", base:"#8a8a8f", ore:"#2b2b2b", solid:true },
   [B.IRON]:    { name:"Залізна руда",  base:"#8a8a8f", ore:"#c8a17a", solid:true },
@@ -87,6 +88,17 @@ function makeTexture(id) {
     g.fillStyle = "#ffd24d"; g.fillRect(TILE/2-4, TILE*0.28, 8, 10);
     g.fillStyle = "#ff8a1f"; g.fillRect(TILE/2-3, TILE*0.34, 6, 6);
     g.fillStyle = "#fff6c2"; g.fillRect(TILE/2-1, TILE*0.30, 3, 4);
+    texCache[id] = c; return c;
+  }
+
+  if (def.stairs) {                                 // дерев'яні сходи-драбина на прозорому тлі
+    g.fillStyle = "#5c3f20";
+    g.fillRect(TILE*0.16, 0, 4, TILE);              // ліва тятива
+    g.fillRect(TILE*0.70, 0, 4, TILE);              // права тятива
+    g.fillStyle = "#8a6435";
+    for (let ry = 4; ry < TILE; ry += 8) g.fillRect(TILE*0.16, ry, TILE*0.58, 3); // щаблі
+    g.fillStyle = "rgba(255,255,255,0.12)";
+    for (let ry = 4; ry < TILE; ry += 8) g.fillRect(TILE*0.16, ry, TILE*0.58, 1);
     texCache[id] = c; return c;
   }
 

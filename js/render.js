@@ -97,7 +97,7 @@ function draw() {
       if (b === B.TORCH) torches.push([sx + TILE/2, sy + TILE*0.35]);
     }
 
-  drawMobs();
+  if (typeof drawHouseInterior === "function") drawHouseInterior();   // кімнати+меблі за фасадом
   if (typeof drawRemotePlayers === "function") drawRemotePlayers();
   drawPlayer();
 
@@ -107,13 +107,15 @@ function draw() {
   }
   ctx.globalAlpha = 1;
 
+  if (typeof drawHouseFacade === "function") drawHouseFacade();        // фасад (зникає всередині)
+
   // нічна темрява
   if (amb < 0.99) {
     ctx.fillStyle = `rgba(6,10,30,${(1-amb)*0.82})`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
-  // світло факелів пробиває темряву
-  if (torches.length) {
+  // тепле світло факелів і вікон пробиває темряву
+  if (torches.length || typeof drawHouseLights === "function") {
     ctx.globalCompositeOperation = "lighter";
     for (const [tx, ty] of torches) {
       const r = 72 + Math.sin(Date.now()/120 + tx) * 6;
@@ -122,15 +124,8 @@ function draw() {
       gr.addColorStop(1, "rgba(255,190,90,0)");
       ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(tx, ty, r, 0, 7); ctx.fill();
     }
+    if (typeof drawHouseLights === "function") drawHouseLights();
     ctx.globalCompositeOperation = "source-over";
-  }
-
-  // підсвітка цільового блока
-  const t = targetBlock();
-  if (inBounds(t.bx, t.by) && t.inReach) {
-    ctx.strokeStyle = getBlock(t.bx, t.by) === B.AIR ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.75)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(t.bx*TILE - cam.x, t.by*TILE - cam.y, TILE, TILE);
   }
 
   drawHUD();

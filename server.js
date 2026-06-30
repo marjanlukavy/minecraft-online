@@ -18,7 +18,7 @@ const ROOT = __dirname;
 const TILE = 32, WORLD_W = 256, WORLD_H = 96;
 const B = { AIR:0, GRASS:1, DIRT:2, STONE:3, WOOD:4, LEAVES:5,
             SAND:6, COAL:7, IRON:8, GOLD:9, DIAMOND:10, PLANK:11,
-            GLASS:12, WATER:13, SNOW:14, BRICK:15, TORCH:16 };
+            GLASS:12, WATER:13, SNOW:14, BRICK:15, TORCH:16, STAIRS:17 };
 
 const world = new Uint8Array(WORLD_W * WORLD_H);
 const idx = (x, y) => y * WORLD_W + x;
@@ -26,70 +26,53 @@ const inBounds = (x, y) => x >= 0 && x < WORLD_W && y >= 0 && y < WORLD_H;
 const getBlock = (x, y) => inBounds(x, y) ? world[idx(x, y)] : B.STONE;
 const setBlock = (x, y, v) => { if (inBounds(x, y)) world[idx(x, y)] = v; };
 
-function hash(x, y) {
-  let h = x * 374761393 + y * 668265263;
-  h = (h ^ (h >> 13)) * 1274126177;
-  return ((h ^ (h >> 16)) >>> 0) / 4294967295;
-}
-function noise1D(x, seed, scale, amp) {
-  const xs = x / scale, x0 = Math.floor(xs), x1 = x0 + 1, t = xs - x0;
-  const s = t * t * (3 - 2 * t);
-  const a = hash(x0, seed), b = hash(x1, seed);
-  return (a + (b - a) * s) * amp;
-}
+// ===================== Сталий світ: хаб-газон + будинок =====================
+// Дзеркало js/world.js — той самий будинок, бо світ авторитетний.
+const GROUND = 56;
+const HOUSE = { x0: 114, x1: 133, roofTop: 44, floorUp: 50, floorGnd: GROUND, floorBas: 62 };
 
-// Та сама генерація, що й у js/world.js — щоб світ був звичним.
 function generateWorld() {
-  const seed = Math.floor(Math.random() * 1000);
-  const baseLevel = Math.floor(WORLD_H * 0.42);
-  const heightMap = [];
-  for (let x = 0; x < WORLD_W; x++) {
-    let h = baseLevel;
-    h += noise1D(x, seed, 28, 16) - 8;
-    h += noise1D(x, seed + 1, 9, 6) - 3;
-    heightMap[x] = Math.floor(h);
-  }
-  for (let x = 0; x < WORLD_W; x++) {
-    const surf = heightMap[x], snowy = surf < baseLevel - 9;
+  const heightMap = new Array(WORLD_W).fill(GROUND);
+  for (let x = 0; x < WORLD_W; x++)
     for (let y = 0; y < WORLD_H; y++) {
-      if (y < surf) world[idx(x, y)] = B.AIR;
-      else if (y === surf) world[idx(x, y)] = snowy ? B.SNOW : B.GRASS;
-      else if (y < surf + 4) world[idx(x, y)] = B.DIRT;
+      if (y < GROUND) world[idx(x, y)] = B.AIR;
+      else if (y === GROUND) world[idx(x, y)] = B.GRASS;
+      else if (y < GROUND + 4) world[idx(x, y)] = B.DIRT;
       else world[idx(x, y)] = B.STONE;
     }
+  for (const tx of [60, 84, 168, 196, 224]) {
+    const th = 4 + (tx % 3);
+    for (let i = 1; i <= th; i++) setBlock(tx, GROUND - i, B.WOOD);
+    const top = GROUND - th;
+    for (let dx = -2; dx <= 2; dx++)
+      for (let dy = -2; dy <= 1; dy++) {
+        if (Math.abs(dx) === 2 && dy <= -1) continue;
+        if (getBlock(tx + dx, top + dy) === B.AIR) setBlock(tx + dx, top + dy, B.LEAVES);
+      }
   }
-  for (let x = 2; x < WORLD_W - 2; x++)
-    for (let y = baseLevel + 6; y < WORLD_H - 2; y++) {
-      const n = noise1D(x, seed + 7, 6, 1) + noise1D(y * 3, seed + 9, 6, 1);
-      if (world[idx(x, y)] === B.STONE && n > 1.32 && n < 1.62) world[idx(x, y)] = B.AIR;
-    }
-  const sprinkle = (type, chance, minY) => {
-    for (let x = 0; x < WORLD_W; x++)
-      for (let y = minY; y < WORLD_H; y++)
-        if (world[idx(x, y)] === B.STONE && Math.random() < chance) world[idx(x, y)] = type;
-  };
-  sprinkle(B.COAL, 0.020, baseLevel + 2);
-  sprinkle(B.IRON, 0.012, baseLevel + 6);
-  sprinkle(B.GOLD, 0.005, baseLevel + 16);
-  sprinkle(B.DIAMOND, 0.003, baseLevel + 24);
-  for (let x = 3; x < WORLD_W - 3; x++) {
-    if (Math.random() < 0.10) {
-      const surf = heightMap[x];
-      if (world[idx(x, surf)] !== B.GRASS) continue;
-      const th = 4 + Math.floor(Math.random() * 3);
-      for (let i = 1; i <= th; i++) setBlock(x, surf - i, B.WOOD);
-      const top = surf - th;
-      for (let dx = -2; dx <= 2; dx++)
-        for (let dy = -2; dy <= 1; dy++) {
-          if (Math.abs(dx) === 2 && dy <= -1) continue;
-          if (getBlock(x + dx, top + dy) === B.AIR) setBlock(x + dx, top + dy, B.LEAVES);
-        }
-    }
+  const H = HOUSE, ix0 = H.x0 + 1, ix1 = H.x1 - 1;
+  for (let x = ix0; x <= ix1; x++)
+    for (let y = H.roofTop; y < H.floorBas; y++) setBlock(x, y, B.AIR);
+  for (let y = H.roofTop; y <= H.floorBas; y++) {
+    const wall = y < H.floorGnd ? B.PLANK : B.STONE;
+    setBlock(H.x0, y, wall); setBlock(H.x1, y, wall);
   }
-  return { heightMap, baseLevel };
+  for (let x = ix0; x <= ix1; x++) {
+    setBlock(x, H.floorUp, B.PLANK);
+    setBlock(x, H.floorGnd, B.PLANK);
+    setBlock(x, H.floorBas, B.STONE);
+  }
+  setBlock(H.x0, 54, B.AIR); setBlock(H.x0, 55, B.AIR);
+  setBlock(H.x0, 46, B.GLASS); setBlock(H.x1, 46, B.GLASS);
+  setBlock(H.x1, 52, B.GLASS);
+  for (let y = 48; y <= 55; y++) setBlock(131, y, B.STAIRS);
+  for (let y = 54; y <= 61; y++) setBlock(116, y, B.STAIRS);
+  setBlock(ix0, 47, B.TORCH); setBlock(ix0, 53, B.TORCH);
+  setBlock(ix1, 53, B.TORCH); setBlock(ix0, 59, B.TORCH);
+  return { heightMap, baseLevel: GROUND };
 }
 const worldMeta = generateWorld();
-console.log(`[світ] згенеровано ${WORLD_W}x${WORLD_H}, baseLevel=${worldMeta.baseLevel}`);
+console.log(`[світ] хаб+будинок ${WORLD_W}x${WORLD_H}, GROUND=${GROUND}`);
 
 // ===================== HTTP: роздача статики =====================
 const TYPES = {

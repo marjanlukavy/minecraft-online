@@ -1,7 +1,7 @@
 "use strict";
 // ===================== Гравець =====================
 const player = {
-  x: (WORLD_W / 2) * TILE, y: 0,
+  x: 105 * TILE, y: 0,                 // газон-хаб ліворуч від будинку
   w: TILE * 0.6, h: TILE * 1.7,
   vx: 0, vy: 0, onGround: false, face: 1,
   hp: 20, maxHp: 20, hurtCd: 0,
@@ -25,32 +25,29 @@ let breakTimer = 0;
 
 function updatePlayer() {
   if (player.hurtCd > 0) player.hurtCd--;
-  if (breakTimer > 0) breakTimer--;
 
   let move = 0;
-  if (!invOpen) {
-    if (keys["ArrowLeft"] || keys["KeyA"]) move -= 1;
-    if (keys["ArrowRight"] || keys["KeyD"]) move += 1;
-  }
-  player.vx = player.vx * 0.0 + move * MOVE_SPEED;  // керований рух (відкидання гасне миттєво по X)
+  if (keys["ArrowLeft"] || keys["KeyA"]) move -= 1;
+  if (keys["ArrowRight"] || keys["KeyD"]) move += 1;
+  player.vx = move * MOVE_SPEED;
   if (move) player.face = move;
 
-  if (!invOpen && (keys["Space"] || keys["ArrowUp"] || keys["KeyW"]) && player.onGround) {
-    player.vy = -JUMP_VEL; player.onGround = false;
-  }
+  const upKey = keys["Space"] || keys["ArrowUp"] || keys["KeyW"];
+  const downKey = keys["ArrowDown"] || keys["KeyS"];
+  const climbing = overlapsClimb(player);
 
-  const cx = Math.floor((player.x + player.w / 2) / TILE);
-  const cyy = Math.floor((player.y + player.h / 2) / TILE);
-  const inWater = getBlock(cx, cyy) === B.WATER;
-  player.vy += inWater ? GRAVITY * 0.3 : GRAVITY;
-  if (inWater) { player.vy = Math.min(player.vy, 2.5); player.vx *= 0.6; }
-  player.vy = Math.min(player.vy, 16);
+  if (climbing) {
+    // на сходах: керований вертикальний рух, гравітація вимкнена
+    player.vy = (downKey ? CLIMB_SPEED : 0) - (upKey ? CLIMB_SPEED : 0);
+    player.onGround = false;
+  } else {
+    if (upKey && player.onGround) { player.vy = -JUMP_VEL; player.onGround = false; }
+    player.vy = Math.min(player.vy + GRAVITY, 16);
+  }
 
   moveEntity(player);
 
-  if (player.y > WORLD_H * TILE) { respawnPlayer(); }
-
-  if (!invOpen) handleMouseAction();
+  if (player.y > WORLD_H * TILE) respawnPlayer();
 }
 
 // ===================== Прицілювання та дії =====================
