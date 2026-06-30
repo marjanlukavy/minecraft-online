@@ -98,6 +98,7 @@ function draw() {
     }
 
   drawMobs();
+  if (typeof drawRemotePlayers === "function") drawRemotePlayers();
   drawPlayer();
 
   for (const p of particles) {
@@ -136,21 +137,30 @@ function draw() {
 }
 
 function drawPlayer() {
-  const px = Math.floor(player.x - cam.x), py = Math.floor(player.y - cam.y);
-  const w = player.w, h = player.h;
-  const walking = Math.abs(player.vx) > 0.5 && player.onGround;
+  drawCharacter(player, { hurt: player.hurtCd > 25 });
+}
+
+// універсальний рендер людини: підходить і для гравця, і для мережевих гравців.
+// opts: { hurt, shirt, pants }
+function drawCharacter(p, opts) {
+  opts = opts || {};
+  const shirt = opts.shirt || "#3a7ca8";
+  const pants = opts.pants || "#2f4a6b";
+  const px = Math.floor(p.x - cam.x), py = Math.floor(p.y - cam.y);
+  const w = p.w, h = p.h;
+  const walking = Math.abs(p.vx || 0) > 0.5 && p.onGround !== false;
   const swing = walking ? Math.sin(Date.now()/90) * 5 : 0;
   ctx.save();
-  if (player.hurtCd > 25) ctx.globalAlpha = 0.5;       // мерехтіння при ударі
+  if (opts.hurt) ctx.globalAlpha = 0.5;                // мерехтіння при ударі
   ctx.translate(px + w/2, py);
-  if (player.face < 0) ctx.scale(-1, 1);
+  if ((p.face || 1) < 0) ctx.scale(-1, 1);
   ctx.translate(-w/2, 0);
   ctx.fillStyle = "rgba(0,0,0,0.18)";
   ctx.beginPath(); ctx.ellipse(w/2, h, w*0.55, 4, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = "#2f4a6b";
+  ctx.fillStyle = pants;
   ctx.fillRect(w*0.1, h*0.62, w*0.32, h*0.38 + swing);
   ctx.fillRect(w*0.58, h*0.62, w*0.32, h*0.38 - swing);
-  ctx.fillStyle = "#3a7ca8"; ctx.fillRect(w*0.05, h*0.32, w*0.9, h*0.34);
+  ctx.fillStyle = shirt; ctx.fillRect(w*0.05, h*0.32, w*0.9, h*0.34);
   ctx.fillStyle = "#e0b48a";
   ctx.fillRect(0, h*0.34, w*0.18, h*0.26);
   ctx.fillRect(w*0.82, h*0.34, w*0.18, h*0.26);

@@ -81,6 +81,7 @@ function handleMouseAction() {
         const drop = getDrop(b); if (drop) addItem(drop.id, drop.n);
         spawnParticles(t.bx, t.by, b);
         setBlock(t.bx, t.by, B.AIR);
+        if (typeof netSendBlock === "function") netSendBlock(t.bx, t.by, B.AIR);
         const act = activeItem();
         breakTimer = (act && act.id === I.PICKAXE) ? 3 : 7;
       }
@@ -108,6 +109,7 @@ function handleMouseAction() {
         if (overlap) { mouse.right = false; return; }
       }
       setBlock(t.bx, t.by, act.id);
+      if (typeof netSendBlock === "function") netSendBlock(t.bx, t.by, act.id);
       act.n--; if (act.n <= 0) inventory[selected] = null;
       refreshUI();
     }

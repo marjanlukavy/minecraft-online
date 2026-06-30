@@ -13,6 +13,7 @@ function loop() {
   updateMobs();
   updateParticles();
   updateCamera();
+  if (typeof netTick === "function") netTick();   // надіслати свій стан іншим
 
   // малювання
   draw();
