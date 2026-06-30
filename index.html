@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Майнкрафт 2D</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="help">
+  <b>WASD / ←→</b> — рух &nbsp;·&nbsp; <b>Space / W</b> — стрибок<br>
+  <b>ЛКМ</b> — копати / бити &nbsp;·&nbsp; <b>ПКМ</b> — ставити / їсти<br>
+  <b>1–8 / колесо</b> — слот &nbsp;·&nbsp; <b>E</b> — інвентар і крафт
+</div>
+<div id="fps"></div>
+
+<div id="hotbar"></div>
+
+<div id="invOverlay">
+  <div id="invPanel">
+    <h2>Інвентар</h2>
+    <div class="invBody">
+      <div class="invLeft">
+        <div id="invGrid" class="grid"></div>
+        <div class="sep"></div>
+        <div id="invHotbar" class="grid"></div>
+      </div>
+      <div class="invRight">
+        <h3>Крафт</h3>
+        <div id="craftList"></div>
+      </div>
+    </div>
+    <div class="hint">ЛКМ — узяти/покласти стак &nbsp;·&nbsp; ПКМ — половину/по одному &nbsp;·&nbsp; E / Esc — закрити</div>
+  </div>
+</div>
+
+<div id="held"><canvas></canvas><div class="count"></div></div>
+
+<!-- Модулі гри (порядок підключення важливий) -->
+<script src="js/config.js"></script>
+<script src="js/items.js"></script>
+<script src="js/world.js"></script>
+<script src="js/daynight.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/crafting.js"></script>
+<script src="js/player.js"></script>
+<script src="js/mobs.js"></script>
+<script src="js/render.js"></script>
+<script src="js/input.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
